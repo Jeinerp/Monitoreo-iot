@@ -27,7 +27,8 @@ SECRET_KEY = 'django-insecure-v1k-gcbg)ft5yasxn=igshx9n=5*b!+3c7*^oqkr+15gm6ug1&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# Puedes poner el link específico o un asterisco para permitir todos mientras terminas el proyecto
+ALLOWED_HOSTS = ['monitoreo-iot-production.up.railway.app', 'localhost', '127.0.0.1']
 
 
 # Application definition
