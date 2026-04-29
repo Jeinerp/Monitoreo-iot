@@ -1,0 +1,1 @@
+web: gunicorn MONITOREO_AMBIENTAL.wsgi:application --bind 0.0.0.0:$PORT

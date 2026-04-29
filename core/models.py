@@ -1,0 +1,196 @@
+from django.db import models
+
+class Usuario(models.Model):
+    idusuarios = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=45)
+    apellido = models.CharField(max_length=45)
+    username = models.CharField(max_length=45, unique=True)
+    password = models.CharField(max_length=45)
+
+    class Meta:
+        db_table = 'usuario'
+
+class Rol(models.Model):
+    idrol = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=45)
+    estado = models.SmallIntegerField(default=1)
+
+    class Meta:
+        db_table = 'rol'
+
+class Recurso(models.Model):
+    idRecursos = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=45)
+    url_backend = models.CharField(max_length=45, blank=True, null=True)
+    url_frontend = models.CharField(max_length=45, blank=True, null=True)
+    path = models.CharField(max_length=45)
+    icono = models.CharField(max_length=45, blank=True, null=True)
+    orden = models.CharField(max_length=45)
+    recurso_padre = models.CharField(max_length=45, blank=True, null=True)
+    estado = models.CharField(max_length=45, default='activo')
+
+    class Meta:
+        db_table = 'recurso'
+
+class UsuarioHasRol(models.Model):
+    usuario_idusuarios = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='usuario_idusuarios')
+    rol_idrol = models.ForeignKey(Rol, on_delete=models.CASCADE, db_column='rol_idrol')
+
+    class Meta:
+        db_table = 'usuario_has_rol'
+        unique_together = (('usuario_idusuarios', 'rol_idrol'),)
+
+class RecursoHasRol(models.Model):
+    recurso_idrecursos = models.ForeignKey(Recurso, on_delete=models.CASCADE, db_column='recurso_idrecursos')
+    rol_idrol = models.ForeignKey(Rol, on_delete=models.CASCADE, db_column='rol_idrol')
+
+    class Meta:
+        db_table = 'recurso_has_rol'
+        unique_together = (('recurso_idrecursos', 'rol_idrol'),)
+
+class ZonaMonitoreo(models.Model):
+    id_zona = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=100)
+    descripcion = models.TextField(blank=True, null=True)
+    latitud = models.DecimalField(max_digits=10, decimal_places=7)
+    longitud = models.DecimalField(max_digits=10, decimal_places=7)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'zona_monitoreo'
+
+class DispositivoIot(models.Model):
+    id_dispositivo = models.AutoField(primary_key=True)
+    id_zona = models.ForeignKey(ZonaMonitoreo, on_delete=models.CASCADE, db_column='id_zona')
+    nombre = models.CharField(max_length=100)
+    mac_address = models.CharField(max_length=50, unique=True)
+    modelo = models.CharField(max_length=80)
+    firmware_version = models.CharField(max_length=50)
+    ip_actual = models.GenericIPAddressField()
+    estado = models.CharField(max_length=20, default='ACTIVO')
+    ultima_conexion = models.DateTimeField(null=True, blank=True)
+    fecha_registro = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'dispositivo_iot'
+
+class TipoVariable(models.Model):
+    id_tipo_variable = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=80)
+    unidad_medida = models.CharField(max_length=20)
+    simbolo = models.CharField(max_length=20, blank=True, null=True)
+    estado = models.CharField(max_length=20, default='ACTIVO')
+
+    class Meta:
+        db_table = 'tipo_variable'
+
+class Sensor(models.Model):
+    id_sensor = models.AutoField(primary_key=True)
+    id_dispositivo = models.ForeignKey(DispositivoIot, on_delete=models.CASCADE, db_column='id_dispositivo')
+    id_tipo_variable = models.ForeignKey(TipoVariable, on_delete=models.CASCADE, db_column='id_tipo_variable')
+    nombre = models.CharField(max_length=100)
+    modelo = models.CharField(max_length=80)
+    pin_conexion = models.CharField(max_length=20)
+    estado = models.CharField(max_length=20, default='ACTIVO')
+    fecha_instalacion = models.DateField()
+
+    class Meta:
+        db_table = 'sensor'
+
+class LecturaSensor(models.Model):
+    id_lectura = models.BigAutoField(primary_key=True)
+    id_sensor = models.ForeignKey(Sensor, on_delete=models.CASCADE, db_column='id_sensor')
+    id_dispositivo = models.ForeignKey(DispositivoIot, on_delete=models.CASCADE, db_column='id_dispositivo')
+    id_tipo_variable = models.ForeignKey(TipoVariable, on_delete=models.CASCADE, db_column='id_tipo_variable')
+    valor = models.DecimalField(max_digits=10, decimal_places=2)
+    fecha_hora = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'lectura_sensor'
+
+class EstadoAmbiental(models.Model):
+    id_estado_ambiental = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=80)
+    nivel = models.CharField(max_length=20)
+    color_referencia = models.CharField(max_length=30)
+    prioridad = models.IntegerField()
+
+    class Meta:
+        db_table = 'estado_ambiental'
+
+class UmbralAlerta(models.Model):
+    id_umbral = models.AutoField(primary_key=True)
+    id_tipo_variable = models.ForeignKey(TipoVariable, on_delete=models.CASCADE, db_column='id_tipo_variable')
+    id_estado_ambiental = models.ForeignKey(EstadoAmbiental, on_delete=models.CASCADE, db_column='id_estado_ambiental')
+    valor_minimo = models.DecimalField(max_digits=10, decimal_places=2)
+    valor_maximo = models.DecimalField(max_digits=10, decimal_places=2)
+    activo = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'umbral_alerta'
+
+class Alerta(models.Model):
+    id_alerta = models.BigAutoField(primary_key=True)
+    id_lectura = models.ForeignKey(LecturaSensor, on_delete=models.CASCADE, db_column='id_lectura')
+    id_umbral = models.ForeignKey(UmbralAlerta, on_delete=models.CASCADE, db_column='id_umbral')
+    id_dispositivo = models.ForeignKey(DispositivoIot, on_delete=models.CASCADE, db_column='id_dispositivo')
+    titulo = models.CharField(max_length=150)
+    mensaje = models.TextField()
+    estado = models.CharField(max_length=20, default='PENDIENTE')
+    fecha_generacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'alerta'
+
+class Buzzer(models.Model):
+    id_buzzer = models.AutoField(primary_key=True)
+    id_dispositivo = models.ForeignKey(DispositivoIot, on_delete=models.CASCADE, db_column='id_dispositivo')
+    nombre = models.CharField(max_length=100)
+    estado = models.CharField(max_length=20, default='APAGADO')
+
+    class Meta:
+        db_table = 'buzzer'
+
+class ComandoRemoto(models.Model):
+    id_comando = models.BigAutoField(primary_key=True)
+    id_dispositivo = models.ForeignKey(DispositivoIot, on_delete=models.CASCADE, db_column='id_dispositivo')
+    id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='id_usuario')
+    tipo_comando = models.CharField(max_length=20)
+    payload = models.JSONField()
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'comando_remoto'
+
+class AuditoriaSistema(models.Model):
+    id_auditoria = models.BigAutoField(primary_key=True)
+    id_usuario = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, db_column='id_usuario')
+    accion = models.CharField(max_length=100)
+    tabla_afectada = models.CharField(max_length=100)
+    fecha_hora = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'auditoria_sistema'
+class EstadoBuzzer(models.Model):
+    id_estado_buzzer = models.BigAutoField(primary_key=True)
+    id_buzzer = models.ForeignKey('Buzzer', on_delete=models.CASCADE, db_column='id_buzzer')
+    id_alerta = models.ForeignKey('Alerta', on_delete=models.SET_NULL, null=True, db_column='id_alerta')
+    estado = models.CharField(max_length=20) # ACTIVO / INACTIVO
+    motivo_variacion = models.CharField(max_length=255, blank=True, null=True)
+    activado_por = models.CharField(max_length=50) # SISTEMA / MANUAL
+    fecha_hora = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'estado_buzzer'
+
+class RespuestaComando(models.Model):
+    id_respuesta = models.BigAutoField(primary_key=True)
+    id_comando = models.ForeignKey('ComandoRemoto', on_delete=models.CASCADE, db_column='id_comando')
+    codigo_respuesta = models.CharField(max_length=50)
+    mensaje = models.TextField()
+    exitoso = models.BooleanField(default=True)
+    respuesta_json = models.JSONField(blank=True, null=True)
+    fecha_respuesta = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'respuesta_comando'
