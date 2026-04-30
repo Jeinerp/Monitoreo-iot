@@ -1,5 +1,9 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 from .views import *
 
 # Creamos el router y registramos todos los ViewSets
@@ -29,5 +33,5 @@ router.register(r'auditoria', AuditoriaSistemaViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    
+
 ]
