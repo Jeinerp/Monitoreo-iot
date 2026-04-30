@@ -1,3 +1,5 @@
+
+
 from django.db import models
 
 class Usuario(models.Model):
@@ -7,6 +9,9 @@ class Usuario(models.Model):
     username = models.CharField(max_length=45, unique=True)
     password = models.CharField(max_length=45)
 
+    def __str__(self):
+        return f"{self.nombre} {self.apellido} ({self.username})"
+
     class Meta:
         db_table = 'usuario'
 
@@ -14,6 +19,9 @@ class Rol(models.Model):
     idrol = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=45)
     estado = models.SmallIntegerField(default=1)
+
+    def __str__(self):
+        return self.nombre
 
     class Meta:
         db_table = 'rol'
@@ -29,12 +37,18 @@ class Recurso(models.Model):
     recurso_padre = models.CharField(max_length=45, blank=True, null=True)
     estado = models.CharField(max_length=45, default='activo')
 
+    def __str__(self):
+        return self.nombre
+
     class Meta:
         db_table = 'recurso'
 
 class UsuarioHasRol(models.Model):
     usuario_idusuarios = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='usuario_idusuarios')
     rol_idrol = models.ForeignKey(Rol, on_delete=models.CASCADE, db_column='rol_idrol')
+
+    def __str__(self):
+        return f"{self.usuario_idusuarios.username} - {self.rol_idrol.nombre}"
 
     class Meta:
         db_table = 'usuario_has_rol'
@@ -43,6 +57,9 @@ class UsuarioHasRol(models.Model):
 class RecursoHasRol(models.Model):
     recurso_idrecursos = models.ForeignKey(Recurso, on_delete=models.CASCADE, db_column='recurso_idrecursos')
     rol_idrol = models.ForeignKey(Rol, on_delete=models.CASCADE, db_column='rol_idrol')
+
+    def __str__(self):
+        return f"{self.rol_idrol.nombre} tiene acceso a {self.recurso_idrecursos.nombre}"
 
     class Meta:
         db_table = 'recurso_has_rol'
@@ -55,6 +72,9 @@ class ZonaMonitoreo(models.Model):
     latitud = models.DecimalField(max_digits=10, decimal_places=7)
     longitud = models.DecimalField(max_digits=10, decimal_places=7)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.nombre
 
     class Meta:
         db_table = 'zona_monitoreo'
@@ -71,6 +91,9 @@ class DispositivoIot(models.Model):
     ultima_conexion = models.DateTimeField(null=True, blank=True)
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"{self.nombre} ({self.mac_address})"
+
     class Meta:
         db_table = 'dispositivo_iot'
 
@@ -80,6 +103,9 @@ class TipoVariable(models.Model):
     unidad_medida = models.CharField(max_length=20)
     simbolo = models.CharField(max_length=20, blank=True, null=True)
     estado = models.CharField(max_length=20, default='ACTIVO')
+
+    def __str__(self):
+        return f"{self.nombre} ({self.simbolo})"
 
     class Meta:
         db_table = 'tipo_variable'
@@ -94,6 +120,9 @@ class Sensor(models.Model):
     estado = models.CharField(max_length=20, default='ACTIVO')
     fecha_instalacion = models.DateField()
 
+    def __str__(self):
+        return f"{self.nombre} en {self.id_dispositivo.nombre}"
+
     class Meta:
         db_table = 'sensor'
 
@@ -105,6 +134,9 @@ class LecturaSensor(models.Model):
     valor = models.DecimalField(max_digits=10, decimal_places=2)
     fecha_hora = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"Lectura {self.id_tipo_variable.nombre}: {self.valor} ({self.fecha_hora})"
+
     class Meta:
         db_table = 'lectura_sensor'
 
@@ -114,6 +146,9 @@ class EstadoAmbiental(models.Model):
     nivel = models.CharField(max_length=20)
     color_referencia = models.CharField(max_length=30)
     prioridad = models.IntegerField()
+
+    def __str__(self):
+        return self.nombre
 
     class Meta:
         db_table = 'estado_ambiental'
@@ -125,6 +160,9 @@ class UmbralAlerta(models.Model):
     valor_minimo = models.DecimalField(max_digits=10, decimal_places=2)
     valor_maximo = models.DecimalField(max_digits=10, decimal_places=2)
     activo = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"Umbral {self.id_tipo_variable.nombre} - {self.id_estado_ambiental.nombre}"
 
     class Meta:
         db_table = 'umbral_alerta'
@@ -139,6 +177,9 @@ class Alerta(models.Model):
     estado = models.CharField(max_length=20, default='PENDIENTE')
     fecha_generacion = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.titulo
+
     class Meta:
         db_table = 'alerta'
 
@@ -147,6 +188,9 @@ class Buzzer(models.Model):
     id_dispositivo = models.ForeignKey(DispositivoIot, on_delete=models.CASCADE, db_column='id_dispositivo')
     nombre = models.CharField(max_length=100)
     estado = models.CharField(max_length=20, default='APAGADO')
+
+    def __str__(self):
+        return f"Buzzer {self.nombre} ({self.id_dispositivo.nombre})"
 
     class Meta:
         db_table = 'buzzer'
@@ -159,6 +203,9 @@ class ComandoRemoto(models.Model):
     payload = models.JSONField()
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"Comando {self.tipo_comando} a {self.id_dispositivo.nombre}"
+
     class Meta:
         db_table = 'comando_remoto'
 
@@ -169,8 +216,12 @@ class AuditoriaSistema(models.Model):
     tabla_afectada = models.CharField(max_length=100)
     fecha_hora = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"{self.accion} en {self.tabla_afectada} ({self.fecha_hora})"
+
     class Meta:
         db_table = 'auditoria_sistema'
+
 class EstadoBuzzer(models.Model):
     id_estado_buzzer = models.BigAutoField(primary_key=True)
     id_buzzer = models.ForeignKey('Buzzer', on_delete=models.CASCADE, db_column='id_buzzer')
@@ -179,6 +230,9 @@ class EstadoBuzzer(models.Model):
     motivo_variacion = models.CharField(max_length=255, blank=True, null=True)
     activado_por = models.CharField(max_length=50) # SISTEMA / MANUAL
     fecha_hora = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Estado Buzzer: {self.estado} ({self.fecha_hora})"
 
     class Meta:
         db_table = 'estado_buzzer'
@@ -191,6 +245,9 @@ class RespuestaComando(models.Model):
     exitoso = models.BooleanField(default=True)
     respuesta_json = models.JSONField(blank=True, null=True)
     fecha_respuesta = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Respuesta ID: {self.id_respuesta} (Éxito: {self.exitoso})"
 
     class Meta:
         db_table = 'respuesta_comando'
