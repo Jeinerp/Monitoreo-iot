@@ -5,7 +5,10 @@ from .serializers import *
 # ==========================================
 # 1. VISTAS DE AUTENTICACIÓN (image_6caa5a.png)
 # ==========================================
-
+class UsuarioViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UsuarioSerializer
+    
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all()
     serializer_class = UsuarioSerializer

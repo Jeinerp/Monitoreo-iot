@@ -4,7 +4,17 @@ from .models import *
 # ==========================================
 # 1. SERIALIZERS DE AUTENTICACIÓN (image_6caa5a.png)
 # ==========================================
+class UsuarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name', 'username', 'password']
+        extra_kwargs = {'password': {'write_only': True}} # La contraseña no se muestra al consultar
 
+    def create(self, validated_data):
+        # Esta línea es la que cifra la contraseña antes de guardarla en la DB
+        user = User.objects.create_user(**validated_data)
+        return user
+    
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
