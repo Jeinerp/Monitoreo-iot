@@ -29,7 +29,7 @@ DEBUG = True
 
 # Puedes poner el link específico o un asterisco para permitir todos mientras terminas el proyecto
 ALLOWED_HOSTS = ['monitoreo-iot-production.up.railway.app', 'localhost', '127.0.0.1']
-
+CSRF_TRUSTED_ORIGINS = ['https://monitoreo-iot-production.up.railway.app']
 
 # Application definition
 
