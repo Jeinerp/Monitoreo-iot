@@ -29,4 +29,5 @@ router.register(r'auditoria', AuditoriaSistemaViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    
 ]
