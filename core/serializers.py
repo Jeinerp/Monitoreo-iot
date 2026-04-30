@@ -8,7 +8,7 @@ from .models import *
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
-        fields = ['idusuarios', 'nombre', 'apellido', 'username'] # No incluimos password por seguridad
+        fields = ['idusuarios', 'nombre', 'apellido', 'username','password'] # No incluimos password por seguridad
 
 class RolSerializer(serializers.ModelSerializer):
     class Meta:
