@@ -9,20 +9,26 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
         
-        # BUSCAMOS LOS RECURSOS REALES EN LA BASE DE DATOS
-        # Filtramos la tabla 'RecursoHasRol' por el rol del usuario que inicia sesión
-        recursos_vinculados = RecursoHasRol.objects.filter(rol_idrol__usuariohasrol__usuario=self.user
-        )
+        # BUSCAMOS LOS RECURSOS: 
+        # Filtramos RecursoHasRol buscando a través de la tabla intermedia 
+        # que conecta el Rol con el Usuario específico.
+        recursos_vinculados = RecursoHasRol.objects.filter(
+            rol_idrol__usuariohasrol__usuario_idusuario=self.user.id
+        ).select_related('recurso_idrecursos')
         
-        # Los convertimos a una lista de nombres
+        # Mapeamos los nombres de los recursos
         data['recursos'] = [
-            {'nombre': r.recurso_idrecursos.nombre} for r in recursos_vinculados
+            {'nombre': r.recurso_idrecursos.nombre} 
+            for r in recursos_vinculados
         ]
         
+        # Datos del usuario para el Dashboard
         data['user'] = {
             'username': self.user.username,
-            'nombre': self.user.first_name or self.user.username
+            'nombre': self.user.first_name or self.user.username,
+            'email': self.user.email
         }
+        
         return data
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
