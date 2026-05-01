@@ -8,15 +8,17 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
-        # Aquí agregamos los datos que Angular necesita
-        data['user'] = {
-            'username': self.user.username,
-            'email': self.user.email,
-            'nombre': self.user.first_name or self.user.username,
-        }
-        # Enviamos roles y recursos (aunque sea un superuser, enviamos arrays vacíos o sus permisos)
-        data['roles'] = [{'nombre': 'Superadministrador'}] if self.user.is_superuser else []
-        data['recursos'] = [{'nombre': 'Dashboard'}, {'nombre': 'Dispositivos'}] # Menú base
+        
+        # Ejemplo: Si el usuario NO es superusuario, solo le damos 1 recurso
+        if not self.user.is_superuser:
+            data['recursos'] = [{'nombre': 'Dashboard'}] # Solo uno
+            data['roles'] = [{'nombre': 'Usuario Básico'}]
+        else:
+            # El superusuario sigue teniendo sus 2 o más recursos
+            data['recursos'] = [
+                {'nombre': 'Dashboard'},
+                {'nombre': 'Dispositivos'}
+            ]
         return data
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
