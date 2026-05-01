@@ -1,11 +1,11 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import (
-    
-    TokenRefreshView,
-    MyTokenObtainPairView,
+from rest_framework_simplejwt.views import TokenRefreshView
+from .views import MyTokenObtainPairView   
+   
+  
 
-)
+
 from .views import *
 
 # Creamos el router y registramos todos los ViewSets
