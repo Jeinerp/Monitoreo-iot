@@ -11,10 +11,13 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         
         # BUSCAMOS LOS RECURSOS REALES EN LA BASE DE DATOS
         # Filtramos la tabla 'RecursoHasRol' por el rol del usuario que inicia sesión
-        recursos_vinculados = RecursoHasRol.objects.filter(rol__usuariohasrol__usuario=self.user)
+        recursos_vinculados = RecursoHasRol.objects.filter(rol_idrol__usuariohasrol__usuario=self.user
+        )
         
         # Los convertimos a una lista de nombres
-        data['recursos'] = [{'nombre': r.recurso.nombre} for r in recursos_vinculados]
+        data['recursos'] = [
+            {'nombre': r.recurso_idrecursos.nombre} for r in recursos_vinculados
+        ]
         
         data['user'] = {
             'username': self.user.username,
