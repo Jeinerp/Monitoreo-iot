@@ -5,21 +5,6 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 # ==========================================
 # 1. VISTAS DE AUTENTICACIÓN (image_6caa5a.png)
 # ==========================================
-# 1. Personalizamos el Serializer para que incluya nombre y correo
-class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-    def validate(self, attrs):
-        data = super().validate(attrs)
-        data['user'] = {
-            'username': self.user.username,
-            'email': self.user.email,
-            'nombre': self.user.first_name or self.user.username,
-        }
-        # Agregamos roles y recursos para que el Dashboard de Angular no salga en 0
-        data['roles'] = [{'nombre': 'Superadministrador'}] if self.user.is_superuser else []
-        data['recursos'] = [{'nombre': 'Dashboard'}, {'nombre': 'Dispositivos'}]
-        return data
-
-# 2. Creamos la Vista que usará ese Serializer
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 class UsuarioViewSet(viewsets.ModelViewSet):
