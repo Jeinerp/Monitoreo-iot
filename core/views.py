@@ -1,10 +1,12 @@
 from rest_framework import viewsets
 from .models import *
 from .serializers import *
-
+from rest_framework_simplejwt.views import TokenObtainPairView
 # ==========================================
 # 1. VISTAS DE AUTENTICACIÓN (image_6caa5a.png)
 # ==========================================
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UsuarioSerializer
