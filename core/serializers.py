@@ -9,29 +9,16 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
         
-        # 1. Obtenemos primero los IDs de los roles que tiene el usuario
-        roles_ids = UsuarioHasRol.objects.filter(
-            usuario_idusuario=self.user.id
-        ).values_list('rol_idrol_id', flat=True)
-
-        # 2. Buscamos los recursos vinculados a esos IDs de roles
-        recursos_vinculados = RecursoHasRol.objects.filter(
-            rol_idrol_id__in=roles_ids
-        ).select_related('recurso_idrecursos')
-        
-        # 3. Mapeamos los nombres de los recursos
-        data['recursos'] = [
-            {'nombre': r.recurso_idrecursos.nombre} 
-            for r in recursos_vinculados
-        ]
-        
-        # Datos del usuario para el Dashboard
-        data['user'] = {
-            'username': self.user.username,
-            'nombre': self.user.first_name or self.user.username,
-            'email': self.user.email
-        }
-        
+        # Ejemplo: Si el usuario NO es superusuario, solo le damos 1 recurso
+        if not self.user.is_superuser:
+            data['recursos'] = [{'nombre': 'Dashboard'}] # Solo uno
+            data['roles'] = [{'nombre': 'Usuario Básico'}]
+        else:
+            # El superusuario sigue teniendo sus 2 o más recursos
+            data['recursos'] = [
+                {'nombre': 'Dashboard'},
+                {'nombre': 'Dispositivos'}
+            ]
         return data
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
