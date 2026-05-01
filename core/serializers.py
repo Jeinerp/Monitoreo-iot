@@ -9,14 +9,17 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
         
-        # BUSCAMOS LOS RECURSOS: 
-        # Filtramos RecursoHasRol buscando a través de la tabla intermedia 
-        # que conecta el Rol con el Usuario específico.
+        # 1. Obtenemos primero los IDs de los roles que tiene el usuario
+        roles_ids = UsuarioHasRol.objects.filter(
+            usuario_idusuario=self.user.id
+        ).values_list('rol_idrol_id', flat=True)
+
+        # 2. Buscamos los recursos vinculados a esos IDs de roles
         recursos_vinculados = RecursoHasRol.objects.filter(
-            rol_idrol__usuariohasrol__usuario_idusuario=self.user.id
+            rol_idrol_id__in=roles_ids
         ).select_related('recurso_idrecursos')
         
-        # Mapeamos los nombres de los recursos
+        # 3. Mapeamos los nombres de los recursos
         data['recursos'] = [
             {'nombre': r.recurso_idrecursos.nombre} 
             for r in recursos_vinculados
