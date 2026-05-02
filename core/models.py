@@ -1,5 +1,4 @@
-
-
+from django.conf import settings
 from django.db import models
 
 class Usuario(models.Model):
@@ -44,10 +43,20 @@ class Recurso(models.Model):
         db_table = 'recurso'
 
 class UsuarioHasRol(models.Model):
-    usuario_idusuarios = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='usuario_idusuarios')
-    rol_idrol = models.ForeignKey(Rol, on_delete=models.CASCADE, db_column='rol_idrol')
+    # CAMBIO CLAVE: Ahora apunta a settings.AUTH_USER_MODEL (la tabla de arriba en el admin)
+    usuario_idusuarios = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        db_column='usuario_idusuarios'
+    )
+    rol_idrol = models.ForeignKey(
+        'Rol', 
+        on_delete=models.CASCADE, 
+        db_column='rol_idrol'
+    )
 
     def __str__(self):
+        # Usamos .username porque es un campo estándar del modelo oficial
         return f"{self.usuario_idusuarios.username} - {self.rol_idrol.nombre}"
 
     class Meta:
