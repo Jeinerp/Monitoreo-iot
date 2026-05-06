@@ -16,7 +16,17 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         }
         # Enviamos roles y recursos (aunque sea un superuser, enviamos arrays vacíos o sus permisos)
         data['roles'] = [{'nombre': 'Superadministrador'}] if self.user.is_superuser else []
-        data['recursos'] = [{'nombre': 'Dashboard'}, {'nombre': 'Dispositivos'}] # Menú base
+        data['recursos'] = [
+            {'id': 1, 'nombre': 'Dashboard', 'path': '/dashboard', 'icono': 'layout-dashboard', 'orden': 1},
+            {'id': 2, 'nombre': 'Dispositivos', 'path': '/dispositivos', 'icono': 'cpu', 'orden': 2},
+            {'id': 3, 'nombre': 'Zonas', 'path': '/zonas', 'icono': 'map', 'orden': 3},
+            {'id': 4, 'nombre': 'Sensores', 'path': '/sensores', 'icono': 'thermometer', 'orden': 4},
+            {'id': 5, 'nombre': 'Lecturas', 'path': '/lecturas', 'icono': 'database', 'orden': 5},
+            {'id': 6, 'nombre': 'Alertas', 'path': '/alertas', 'icono': 'alert-triangle', 'orden': 6},
+            {'id': 7, 'nombre': 'Pronóstico', 'path': '/pronostico', 'icono': 'cloud', 'orden': 7},
+            {'id': 8, 'nombre': 'Predicciones', 'path': '/predicciones', 'icono': 'trending-up', 'orden': 8},
+            {'id': 9, 'nombre': 'Roles', 'path': '/roles', 'icono': 'shield', 'orden': 9}
+        ] # Menú completo
         return data
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
